@@ -6,8 +6,8 @@ gem "rails", "~> 8.0.2", ">= 8.0.2.1"
 gem "propshaft"
 # Use mysql as the database for Active Record
 # Usar MySQL en local (InfinityFree) y permitir cambiar a PostgreSQL en el futuro
-gem 'mysql2', '~> 0.5'
-gem 'pg', '~> 1.5'
+gem "mysql2", "~> 0.5"
+gem "pg", "~> 1.5"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -23,7 +23,7 @@ gem "jbuilder"
 # gem "bcrypt", "~> 3.1.7"
 
 # Authentication
-gem 'devise'
+gem "devise"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -68,12 +68,12 @@ group :test do
 end
 
 group :development, :test do
-  gem 'dotenv-rails'
+  gem "dotenv-rails"
 end
 
 # Use Cloudinary for image uploads and transformations [https://cloudinary.com/documentation/rails_integration]
-gem 'cloudinary', '~> 2.3.0'
-gem 'activestorage-cloudinary-service', '~> 0.2.3'
+gem "cloudinary", "~> 2.3.0"
+gem "activestorage-cloudinary-service", "~> 0.2.3"
 
 # PDF processing
-gem 'pdf-reader', '~> 2.0'
+gem "pdf-reader", "~> 2.0"
