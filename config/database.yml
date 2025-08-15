@@ -53,9 +53,12 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: <%= ENV.fetch("DB_NAME", "libros_production") %>
-    username: <%= ENV.fetch("DB_USERNAME", "libros") %>
-    password: <%= ENV.fetch("DB_PASSWORD", "") %>
+    host: <%= ENV.fetch("PRODUCTION_DB_HOST", ENV.fetch("DB_HOST", "localhost")) %>
+    port: <%= ENV.fetch("DB_PORT", "3306") %>
+    database: <%= ENV.fetch("PRODUCTION_DB_NAME", ENV.fetch("DB_NAME", "libros_production")) %>
+    username: <%= ENV.fetch("PRODUCTION_DB_USERNAME", ENV.fetch("DB_USERNAME", "libros")) %>
+    password: <%= ENV.fetch("PRODUCTION_DB_PASSWORD", ENV.fetch("DB_PASSWORD", "")) %>
+    socket: <%= ENV.fetch("DB_SOCKET", "") %>
   cache:
     <<: *primary_production
     database: libros_production_cache
