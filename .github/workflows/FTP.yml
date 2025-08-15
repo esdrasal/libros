@@ -23,5 +23,3 @@ jobs:
           local-dir: ./       # Todo el repo
           server-dir: /htdocs # Carpeta remota en InfinityFree
           port: 21
-          passive: true
-          git-ftp-args: --insecure # Si el servidor tiene certificados inseguros
