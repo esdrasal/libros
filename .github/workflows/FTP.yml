@@ -11,16 +11,17 @@ jobs:
     environment: Production
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v5
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
           local-dir: ./       # Todo el repo
           server-dir: /htdocs # Carpeta remota en InfinityFree
+          port: 21
           passive: true
           git-ftp-args: --insecure # Si el servidor tiene certificados inseguros
