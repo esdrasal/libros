@@ -1,1 +1,1 @@
-require 'pdf-reader'
+require "pdf-reader"

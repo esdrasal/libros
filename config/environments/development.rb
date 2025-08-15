@@ -30,7 +30,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
-  
+
   # Configure Active Storage URL options for local development
   config.active_storage.variant_processor = :mini_magick
   Rails.application.routes.default_url_options[:host] = "localhost:3000"

@@ -13,16 +13,16 @@ begin
   puts "\n=== Probando conexión ==="
   result = Cloudinary::Api.ping
   puts "✅ Conexión exitosa: #{result}"
-  
+
   # List existing resources
   puts "\n=== Archivos existentes ==="
   resources = Cloudinary::Api.resources(resource_type: 'raw', max_results: 10)
   puts "Total de archivos raw: #{resources['resources'].length}"
-  
+
   resources['resources'].each do |resource|
     puts "- #{resource['public_id']} (#{resource['bytes']} bytes)"
   end
-  
+
   # Test existing PDFs from database
   puts "\n=== PDFs en la base de datos ==="
   Libro.includes(:pdf_attachment).each do |libro|
@@ -31,11 +31,11 @@ begin
       puts "  - Key: #{libro.pdf.key}"
       puts "  - Filename: #{libro.pdf.filename}"
       puts "  - Size: #{libro.pdf.byte_size}"
-      
+
       begin
         url = libro.pdf.url
         puts "  - URL: #{url}"
-        
+
         # Test URL accessibility
         require 'net/http'
         uri = URI(url)
@@ -48,7 +48,7 @@ begin
       puts "📚 #{libro.titulo}: Sin PDF adjunto"
     end
   end
-  
+
 rescue Cloudinary::Api::Error => e
   puts "❌ Error de Cloudinary: #{e.message}"
 rescue => e
