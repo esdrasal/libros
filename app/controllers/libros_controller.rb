@@ -1,7 +1,7 @@
 class LibrosController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_libro, only: [:show, :leer, :guardar_pagina, :agregar_nota]
-  
+  before_action :set_libro, only: [ :show, :leer, :guardar_pagina, :agregar_nota ]
+
   def index
     # Ahora todos los libros del usuario están en user_libros
     @user_libros = current_user.user_libros.includes(:libro)
@@ -30,11 +30,11 @@ class LibrosController < ApplicationController
     # @libro ya está definido por set_libro
     # Ahora siempre usamos user_libro
     @user_libro = current_user.user_libros.find_by!(libro: @libro)
-    
+
     if @user_libro.en_espera?
       @user_libro.update(estado: :leyendo)
     end
-    
+
     @notas = @libro.nota.where(user: current_user)
   end
 
@@ -42,7 +42,7 @@ class LibrosController < ApplicationController
     # @libro ya está definido por set_libro
     # Ahora siempre usamos user_libro
     user_libro = current_user.user_libros.find_by!(libro: @libro)
-    
+
     if user_libro.update(pagina_actual: params[:pagina_actual])
       head :ok
     else
@@ -67,12 +67,12 @@ class LibrosController < ApplicationController
 
   def agregar_a_lista
     @libro = Libro.find(params[:id])
-    
+
     if current_user.libros_en_lista.include?(@libro)
-      render json: { success: false, message: 'El libro ya está en tu lista' }
+      render json: { success: false, message: "El libro ya está en tu lista" }
     else
       current_user.user_libros.create(libro: @libro)
-      render json: { success: true, message: 'Libro agregado a tu lista' }
+      render json: { success: true, message: "Libro agregado a tu lista" }
     end
   end
 
