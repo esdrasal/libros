@@ -1,0 +1,39 @@
+name: Close Issues on Master Merge
+
+on:
+  push:
+    branches:
+      - main   # Solo cuando haya un merge/push a master
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get commit messages from this push
+        id: get_commits
+        run: |
+          # Extrae todos los mensajes de commit en el rango del push
+          echo "COMMITS<<EOF" >> $GITHUB_ENV
+          git log ${{ github.event.before }}..${{ github.sha }} --pretty=%B >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Find issue references
+        id: find_issues
+        run: |
+          # Busca referencias tipo #123 en todos los commits
+          issues=$(echo "${COMMITS}" | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+          echo "issues=$issues" >> $GITHUB_ENV
+
+      - name: Close referenced issues
+        if: env.issues != ''
+        run: |
+          for issue in $issues; do
+            echo "Closing issue #$issue"
+            gh issue close $issue --comment "Closed automatically: fix was merged into master."
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
