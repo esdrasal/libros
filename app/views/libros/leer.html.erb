@@ -1,7 +1,7 @@
 <h1 class="text-center my-4"><%= @libro.titulo %></h1>
 
 <!-- Contenedor PDF -->
-<div id="pdf-container" class="border rounded shadow mx-auto mb-4" style="width:90%; height:80vh; position:relative;">
+<div id="pdf-container" class="border rounded shadow mx-auto mb-4 d-flex justify-content-center align-items-start" style="width:90%; height:80vh; position:relative; overflow:hidden;">
   <!-- Botón invisible izquierdo -->
   <div id="nav-left" style="position:absolute; left:0; top:0; width:15%; height:100%; background:transparent; cursor:pointer; z-index:10; transition:background 0.2s;"></div>
   <!-- Botón invisible derecho -->
@@ -68,10 +68,9 @@
     container.appendChild(canvas);
     
     // Make canvas responsive to container
-    canvas.style.maxWidth = '100%';
-    canvas.style.maxHeight = '100%';
+    canvas.style.maxWidth = '500%';
+    canvas.style.maxHeight = '500%';
     canvas.style.display = 'block';
-    canvas.style.margin = '0 auto';
 
     pdfjsLib.getDocument(url).promise.then(function(pdf) {
       console.log('PDF cargado correctamente:', pdf);
@@ -86,16 +85,8 @@
     function renderPage(num) {
       pageRendering = true;
       pdfDoc.getPage(num).then(function(page) {
-        // Calculate scale to fit the container
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        
-        const viewport = page.getViewport({scale: 1});
-        const scaleX = containerWidth / viewport.width;
-        const scaleY = containerHeight / viewport.height;
-        const baseScale = Math.min(scaleX, scaleY, 2); // Max scale of 2
-        const scale = baseScale * currentScale;
-        
+        // Usar baseScale fijo
+        const scale = currentScale;
         const scaledViewport = page.getViewport({scale: scale});
         canvas.height = scaledViewport.height;
         canvas.width = scaledViewport.width;
@@ -133,18 +124,21 @@
     document.getElementById('prev').addEventListener('click', () => {
       if (pageNum <= 1) return;
       pageNum--;
+      resetCanvasPan();
       queueRenderPage(pageNum);
     });
 
     document.getElementById('next').addEventListener('click', () => {
       if (pageNum >= pdfDoc.numPages) return;
       pageNum++;
+      resetCanvasPan();
       queueRenderPage(pageNum);
     });
 
     // Controles de zoom
     document.getElementById('zoom-in').addEventListener('click', () => {
-      currentScale = Math.min(currentScale * 1.2, 3); // Max zoom 3x
+      currentScale = currentScale * 1.2;
+      console.log('Zoom actual:', currentScale);
       queueRenderPage(pageNum);
     });
 
@@ -153,8 +147,51 @@
       queueRenderPage(pageNum);
     });
 
+    let isDraggingCanvas = false;
+    let dragCanvasStartX = 0, dragCanvasStartY = 0;
+    let canvasOffsetX = 0, canvasOffsetY = 0;
+
+    // Permitir drag-to-pan solo si el zoom es mayor a 1
+    canvas.addEventListener('mousedown', function(e) {
+      if (currentScale <= 1) return;
+      isDraggingCanvas = true;
+      dragCanvasStartX = e.clientX;
+      dragCanvasStartY = e.clientY;
+      canvas.style.cursor = 'grab';
+    });
+
+    document.addEventListener('mouseup', function() {
+      isDraggingCanvas = false;
+      canvas.style.cursor = currentScale > 1 ? 'grab' : 'default';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (currentScale > 1 && !isDraggingCanvas) {
+        canvas.style.cursor = 'grab';
+      } else if (!isDraggingCanvas) {
+        canvas.style.cursor = 'default';
+      }
+      if (!isDraggingCanvas) return;
+      const dx = e.clientX - dragCanvasStartX;
+      const dy = e.clientY - dragCanvasStartY;
+      dragCanvasStartX = e.clientX;
+      dragCanvasStartY = e.clientY;
+      canvasOffsetX += dx;
+      canvasOffsetY += dy;
+      canvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px)`;
+    });
+
+    // Reset pan on zoom reset or page change
+    function resetCanvasPan() {
+      canvasOffsetX = 0;
+      canvasOffsetY = 0;
+      canvas.style.transform = 'translate(0,0)';
+      canvas.style.cursor = 'default';
+    }
+
     document.getElementById('zoom-reset').addEventListener('click', () => {
       currentScale = 1;
+      resetCanvasPan();
       queueRenderPage(pageNum);
     });
 
@@ -196,7 +233,10 @@
     const cerrarNota = document.getElementById('cerrar-nota');
     const guardarNota = document.getElementById('guardar-nota');
 
-    btnNota.addEventListener('click', () => { notaModal.style.display = 'block'; });
+    btnNota.addEventListener('click', () => { 
+      notaModal.style.display = 'block'; 
+      document.getElementById('nota-texto').focus();
+    });
     cerrarNota.addEventListener('click', () => { notaModal.style.display = 'none'; });
 
     // Hacer modal draggable solo desde el header
