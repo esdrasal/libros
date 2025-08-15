@@ -1,24 +1,49 @@
-# README
+# Libros
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Una aplicación Ruby on Rails para gestionar libros y notas de lectura.
 
-Things you may want to cover:
+## Requisitos
 
-* Ruby version
+* Ruby version: 3.3.1
+* Rails version: ~> 8.0.2
 
-* System dependencies
+## Configuración de base de datos
 
-* Configuration
+La aplicación está configurada para usar:
+- MySQL en desarrollo local
+- PostgreSQL en producción
 
-* Database creation
+## Instalación
 
-* Database initialization
+1. Instalar dependencias:
+   ```bash
+   bundle install
+   ```
 
-* How to run the test suite
+2. Configurar la base de datos:
+   ```bash
+   rails db:create
+   rails db:migrate
+   rails db:seed
+   ```
 
-* Services (job queues, cache servers, search engines, etc.)
+3. Iniciar el servidor:
+   ```bash
+   rails server
+   ```
 
-* Deployment instructions
+## Funcionalidades
 
-* ...
+- Gestión de libros
+- Sistema de notas de lectura
+- Subida de imágenes con Cloudinary
+
+## Ejecutar tests
+
+```bash
+rails test
+```
+
+## Despliegue
+
+La aplicación está configurada para despliegue con Kamal.
