@@ -3,7 +3,7 @@ name: FTP Deploy to InfinityFree
 on:
   push:
     branches:
-      - main  # Solo desplegar cuando se haga push a main
+      - main  # Desplegar cuando se haga push a main
 
 jobs:
   ftp-deploy:
