@@ -1,0 +1,33 @@
+name: Reopen Issues on Develop Merge
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  reopen-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get commits in this push
+        id: commits
+        run: |
+          echo "COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=%B)" >> $GITHUB_ENV
+
+      - name: Extract closed issues
+        id: extract
+        run: |
+          # Busca commits que cerraron issues (Fixes/Closes)
+          issues=$(echo "${COMMITS}" | grep -oE '(Fixes|Closes) #[0-9]+' | awk '{print $2}' | tr -d '#')
+          echo "issues=$issues" >> $GITHUB_ENV
+
+      - name: Reopen issues
+        if: env.issues != ''
+        uses: peter-evans/reopen-issue@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ env.issues }}
+          comment: "Reopened automatically: issue should remain open until merged into master."
