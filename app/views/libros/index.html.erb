@@ -1,33 +1,45 @@
-<h1>Mis Libros</h1>
+<!-- filepath: /home/esdras/libros/app/views/libros/index.html.erb -->
+<h1 class="text-center my-4">Mis Libros</h1>
 
-<% unless @libros.any? %>
-  <p>No tienes libros registrados.</p>
-  <%= link_to "Agregar Libro", new_libro_path, class: "btn btn-primary" %>
+<% unless @user_libros.any? %>
+  <p class="text-muted text-center">No tienes libros registrados.</p>
+  <div class="text-center">
+    <%= link_to "Agregar Libro", new_libro_path, class: "btn btn-primary" %>
+  </div>
 <% else %> 
-<table>
-  <tr>
-    <th>Título</th>
-    <th>Autor</th>
-    <th>Estado</th>
-    <th>Progreso</th>
-  </tr>
-  <% @libros.each do |libro| %>
-    <tr>
-      <td><%= link_to libro.titulo, leer_libro_path(libro) %></td>
-      <td><%= libro.autor %></td>
-      <td><%= libro.estado.humanize %></td>
-      <td>
-        <% if libro.leyendo? %>
-          <%= libro.progreso %>%
-        <% else %>
-          -
+  <div class="mx-auto" style="max-width:1000px; margin-left:5%; margin-right:5%;">
+    <table class="table table-bordered table-hover align-middle shadow-sm" style="background-color:#f8fbff;">
+      <thead class="table-primary">
+        <tr>
+          <th class="fw-bold">Título</th>
+          <th class="fw-bold">Autor</th>
+          <th class="fw-bold">Estado</th>
+          <th class="fw-bold">Progreso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @user_libros.each do |user_libro| %>
+          <tr>
+            <td>
+              <%= link_to user_libro.libro.titulo, leer_libro_path(user_libro.libro), class: "link-primary text-decoration-none fw-semibold" %>
+            </td>
+            <td><%= user_libro.libro.autor %></td>
+            <td><%= user_libro.estado.humanize %></td>
+            <td>
+              <% if user_libro.leyendo? %>
+                <%= user_libro.progreso %>%
+              <% else %>
+                -
+              <% end %>
+            </td>
+          </tr>
         <% end %>
-      </td>
-    </tr>
-  <% end %>
-</table>
+      </tbody>
+    </table>
+  </|div>
 
-<br>
-<%= link_to "Agregar Libro", new_libro_path, class: "btn btn-primary" %>
+  <div class="text-center mt-3">
+    <%= link_to "Subir Libro", new_libro_path, class: "btn btn-primary" %>
+    <%= link_to "Agregar desde librería", libreria_libros_path, class: "btn btn-primary" %>
+  </div>
 <% end %>
-

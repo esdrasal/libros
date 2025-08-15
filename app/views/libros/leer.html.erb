@@ -1,34 +1,35 @@
-<h1><%= @libro.titulo %> - Lector</h1>
+<h1 class="text-center my-4"><%= @libro.titulo %></h1>
 
-<div id="pdf-container" style="width:90%; height:80vh; border:1px solid #ccc; margin:0 auto; position:relative;">
+<!-- Contenedor PDF -->
+<div id="pdf-container" class="border rounded shadow mx-auto mb-4" style="width:90%; height:80vh; position:relative;">
   <!-- Botón invisible izquierdo -->
   <div id="nav-left" style="position:absolute; left:0; top:0; width:15%; height:100%; background:transparent; cursor:pointer; z-index:10; transition:background 0.2s;"></div>
   <!-- Botón invisible derecho -->
   <div id="nav-right" style="position:absolute; right:0; top:0; width:15%; height:100%; background:transparent; cursor:pointer; z-index:10; transition:background 0.2s;"></div>
 </div>
 
-<div style="text-align: center; margin: 20px 0;">
-  <button id="prev">Anterior</button>
-  <button id="next">Siguiente</button>
-  <button id="zoom-out">Zoom -</button>
-  <button id="zoom-in">Zoom +</button>
-  <button id="zoom-reset">Reset</button>
-  <span style="margin-left: 20px;">Página: <span id="page-num"></span> / <span id="page-count"></span></span>
-  <button id="btn-nota">Notas</button>
-  <!-- Botón Volver a Mis Libros -->
-  <%= link_to "Volver a Mis Libros", libros_path, class: "btn btn-secondary", style: "margin-left: 20px;" %>
+<!-- Botones de navegación -->
+<div class="text-center mb-4">
+<button id="zoom-out" class="btn btn-outline-secondary mx-1">Zoom -</button>
+<button id="zoom-in" class="btn btn-outline-secondary mx-1">Zoom +</button>
+<button id="zoom-reset" class="btn btn-outline-secondary mx-1">Reset</button>
+<button id="prev" class="btn btn-outline-primary mx-1">Anterior</button>
+<span class="mx-3">Página: <span id="page-num"></span> / <span id="page-count"></span></span>
+<button id="next" class="btn btn-outline-primary mx-1">Siguiente</button>
+  <button id="btn-nota" class="btn btn-warning mx-1">Notas</button>
+  <%= link_to "Volver a Mis Libros", libros_path, class: "btn btn-secondary mx-1" %>
 </div>
 
 <!-- Modal flotante de notas -->
-<div id="nota-modal" style="display:none; position:absolute; top:100px; left:100px; width:300px; background:#f9f9f9; border:1px solid #ccc; z-index:1000;">
-  <div id="nota-header" style="background:#ddd; padding:5px 10px; cursor:move; border-bottom:1px solid #ccc;">
-    <h4 style="margin:0;">Agregar Nota</h4>
+<div id="nota-modal" class="card shadow" style="display:none; position:absolute; top:100px; left:100px; width:300px; z-index:1000;">
+  <div id="nota-header" class="card-header bg-light" style="cursor:move;">
+    <h5 class="mb-0">Notas</h5>
   </div>
-  <div style="padding:10px;">
-    <textarea id="nota-texto" style="width:100%; height:100px; cursor:text;"></textarea>
-    <div style="margin-top:10px;">
-      <button id="guardar-nota">Guardar</button>
-      <button id="cerrar-nota">Cerrar</button>
+  <div class="card-body">
+    <textarea id="nota-texto" class="form-control mb-3" style="height:100px;"></textarea>
+    <div class="text-end">
+      <button id="guardar-nota" class="btn btn-success me-2">Guardar</button>
+      <button id="cerrar-nota" class="btn btn-outline-secondary">Cerrar</button>
     </div>
   </div>
 </div>
@@ -56,7 +57,7 @@
     <% end %>
 
     let pdfDoc = null,
-        pageNum = <%= @libro.pagina_actual || 1 %>,
+        pageNum = <%= [@user_libro.pagina_actual, 1].max %>,
         pageRendering = false,
         pageNumPending = null,
         currentScale = 1;
@@ -162,7 +163,7 @@
     const navRight = document.getElementById('nav-right');
 
     navLeft.addEventListener('mouseenter', () => {
-      navLeft.style.background = 'rgba(0,0,0,0.05)';
+      navLeft.style.background = 'linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0))';
     });
 
     navLeft.addEventListener('mouseleave', () => {
@@ -176,7 +177,7 @@
     });
 
     navRight.addEventListener('mouseenter', () => {
-      navRight.style.background = 'rgba(0,0,0,0.05)';
+      navRight.style.background = 'linear-gradient(to left, rgba(0,0,0,0.15), rgba(0,0,0,0))';
     });
 
     navRight.addEventListener('mouseleave', () => {
@@ -236,7 +237,6 @@
       .then(res => res.json())
       .then(data => {
         if(data.success){
-          alert('Nota guardada!');
           document.getElementById('nota-texto').value = '';
           notaModal.style.display = 'none';
         } else {

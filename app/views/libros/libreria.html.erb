@@ -1,0 +1,91 @@
+<!-- filepath: /home/esdras/libros/app/views/libros/libreria.html.erb -->
+<h1 class="text-center my-4">Librería</h1>
+<p class="text-muted text-center">Descubre libros de otros usuarios</p>
+
+<% unless @libros.any? %>
+  <p class="text-muted text-center">No hay libros disponibles en la librería.</p>
+<% else %> 
+  <div class="mx-auto" style="max-width:1200px; margin-left:5%; margin-right:5%;">
+    <table class="table table-bordered table-hover align-middle shadow-sm" style="background-color:#f8fbff;">
+      <thead class="table-success">
+        <tr>
+          <th class="fw-bold">Título</th>
+          <th class="fw-bold">Autor</th>
+          <th class="fw-bold">Subido por</th>
+          <th class="fw-bold">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @libros.each do |libro| %>
+          <tr>
+            <td>
+              <span class="fw-semibold"><%= libro.titulo %></span>
+            </td>
+            <td><%= libro.autor %></td>
+            <td>
+              <% if libro.user %>
+                <%= libro.user.email %>
+              <% else %>
+                <span class="text-muted">Usuario anónimo</span>
+              <% end %>
+            </td>
+            <td>
+              <% if @libros_en_mi_lista.include?(libro.id) %>
+                <span class="badge bg-success">En tu lista</span>
+              <% else %>
+                <button 
+                  class="btn btn-outline-primary btn-sm agregar-libro" 
+                  data-libro-id="<%= libro.id %>"
+                  data-bs-toggle="tooltip" 
+                  title="Agregar a mi lista">
+                  + Agregar
+                </button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const botonesAgregar = document.querySelectorAll('.agregar-libro');
+  
+  botonesAgregar.forEach(boton => {
+    boton.addEventListener('click', function() {
+      const libroId = this.dataset.libroId;
+      const button = this;
+      
+      // Deshabilitar el botón durante la petición
+      button.disabled = true;
+      button.textContent = 'Agregando...';
+      
+      fetch(`/libros/${libroId}/agregar_a_lista`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          button.outerHTML = '<span class="badge bg-success">En tu lista</span>';
+        } else {
+          alert(data.message);
+          button.disabled = false;
+          button.textContent = '+ Agregar';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error al agregar el libro');
+        button.disabled = false;
+        button.textContent = '+ Agregar';
+      });
+    });
+  });
+});
+</script>

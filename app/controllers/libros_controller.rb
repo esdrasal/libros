@@ -1,6 +1,10 @@
 class LibrosController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_libro, only: [:show, :leer, :guardar_pagina, :agregar_nota]
+  
   def index
-    @libros = Libro.all
+    # Ahora todos los libros del usuario están en user_libros
+    @user_libros = current_user.user_libros.includes(:libro)
   end
 
   def new
@@ -8,8 +12,10 @@ class LibrosController < ApplicationController
   end
 
   def create
-     @libro = Libro.new(libro_params)
+    @libro = Libro.new(libro_params.merge(user_id: 0)) # Libros de librería
     if @libro.save
+      # Crear automáticamente user_libro para el usuario actual
+      current_user.user_libros.create!(libro: @libro)
       redirect_to root_path, notice: "Libro agregado correctamente."
     else
       render :new
@@ -17,21 +23,27 @@ class LibrosController < ApplicationController
   end
 
   def show
-    @libro = Libro.find(params[:id])
+    # @libro ya está definido por set_libro
   end
 
   def leer
-    @libro = Libro.find(params[:id])
+    # @libro ya está definido por set_libro
+    # Ahora siempre usamos user_libro
+    @user_libro = current_user.user_libros.find_by!(libro: @libro)
     
-    # Cambiar estado a "leyendo" si está en "en_espera"
-    if @libro.en_espera?
-      @libro.update(estado: :leyendo)
+    if @user_libro.en_espera?
+      @user_libro.update(estado: :leyendo)
     end
+    
+    @notas = @libro.nota.where(user: current_user)
   end
 
   def guardar_pagina
-    @libro = Libro.find(params[:id])
-    if @libro.update(pagina_actual: params[:pagina_actual])
+    # @libro ya está definido por set_libro
+    # Ahora siempre usamos user_libro
+    user_libro = current_user.user_libros.find_by!(libro: @libro)
+    
+    if user_libro.update(pagina_actual: params[:pagina_actual])
       head :ok
     else
       head :unprocessable_entity
@@ -39,8 +51,8 @@ class LibrosController < ApplicationController
   end
 
   def agregar_nota
-    @libro = Libro.find(params[:id])
-    @nota = @libro.nota.new(contenido: params[:contenido], pagina: params[:pagina])
+    # @libro ya está definido por set_libro
+    @nota = @libro.nota.new(contenido: params[:contenido], pagina: params[:pagina], user: current_user)
     if @nota.save
       render json: { success: true, nota: @nota }
     else
@@ -48,10 +60,39 @@ class LibrosController < ApplicationController
     end
   end
 
+  def libreria
+    @libros = Libro.all
+    @libros_en_mi_lista = current_user.libros_en_lista.pluck(:id)
+  end
+
+  def agregar_a_lista
+    @libro = Libro.find(params[:id])
+    
+    if current_user.libros_en_lista.include?(@libro)
+      render json: { success: false, message: 'El libro ya está en tu lista' }
+    else
+      current_user.user_libros.create(libro: @libro)
+      render json: { success: true, message: 'Libro agregado a tu lista' }
+    end
+  end
+
+  def notas
+    @libros_con_notas = Libro
+      .joins(:nota)
+      .where(nota: { user_id: current_user.id })
+      .distinct
+      .includes(:nota)
+  end
 
   private
 
+  def set_libro
+    # Ahora siempre buscamos a través de user_libros
+    user_libro = current_user.user_libros.find_by!(libro_id: params[:id])
+    @libro = user_libro.libro
+  end
+
   def libro_params
-    params.require(:libro).permit(:titulo, :autor, :paginas, :ubicacion, :estado, :pagina_actual, :pdf)
+    params.require(:libro).permit(:titulo, :autor, :ubicacion, :pagina_actual, :pdf)
   end
 end

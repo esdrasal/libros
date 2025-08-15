@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_15_010449) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_15_031654) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -44,10 +44,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_15_010449) do
     t.string "autor"
     t.integer "paginas"
     t.string "ubicacion"
-    t.integer "estado"
-    t.integer "pagina_actual"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_libros_on_user_id"
   end
 
   create_table "nota", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -56,10 +56,38 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_15_010449) do
     t.bigint "libro_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.index ["libro_id"], name: "index_nota_on_libro_id"
+    t.index ["user_id"], name: "index_nota_on_user_id"
+  end
+
+  create_table "user_libros", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "libro_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "estado", default: 0
+    t.integer "pagina_actual", default: 0
+    t.index ["libro_id"], name: "index_user_libros_on_libro_id"
+    t.index ["user_id"], name: "index_user_libros_on_user_id"
+  end
+
+  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "nota", "libros"
+  add_foreign_key "nota", "users"
+  add_foreign_key "user_libros", "libros"
+  add_foreign_key "user_libros", "users"
 end

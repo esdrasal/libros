@@ -1,0 +1,62 @@
+<!-- filepath: /home/esdras/libros/app/views/libros/notas.html.erb -->
+<h1 class="text-center my-4">Mis Notas</h1>
+
+<% if @libros_con_notas.any? %>
+  <div class="accordion mx-auto" id="librosNotasAccordion" style="max-width:900px; margin-left:5%; margin-right:5%;">
+    <% @libros_con_notas.each_with_index do |libro, idx| %>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-<%= idx %>">
+          <button class="accordion-button collapsed fw-semibold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= idx %>" aria-expanded="false" aria-controls="collapse-<%= idx %>">
+            <%= libro.titulo %> <span class="ms-2 text-muted small">por <%= libro.autor %></span>
+          </button>
+        </h2>
+        <div id="collapse-<%= idx %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= idx %>" data-bs-parent="#librosNotasAccordion">
+          <div class="accordion-body">
+            <% notas = libro.nota.where(user_id: current_user.id).order(:pagina) %>
+            <% if notas.any? %>
+              <ul class="list-group">
+                <% notas.each do |nota| %>
+                  <li class="list-group-item d-flex justify-content-between align-items-start" id="nota-<%= nota.id %>">
+                    <div class="w-100">
+                      <span class="badge bg-primary me-2">Pág. <%= nota.pagina %></span>
+                      <span id="contenido-<%= nota.id %>"><%= simple_format(nota.contenido) %></span>
+                      <form id="form-editar-<%= nota.id %>" class="d-none mt-2" data-nota-id="<%= nota.id %>" action="<%= notum_path(nota) %>" method="post">
+                        <%= hidden_field_tag :_method, "patch" %>
+                        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                        <%= hidden_field_tag "notum[pagina]", nota.pagina %>
+                        <textarea name="notum[contenido]" class="form-control mb-2" rows="2"><%= nota.contenido %></textarea>
+                        <div class="text-end">
+                          <button type="submit" class="btn btn-success btn-sm me-1">Guardar</button>
+                          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelarEdicion(<%= nota.id %>)">Cancelar</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="ms-2">
+                      <button class="btn btn-outline-secondary btn-sm me-1" onclick="editarNota(<%= nota.id %>)">Editar</button>
+                      <%= button_to 'Eliminar', notum_path(nota), method: :delete, data: { confirm: '¿Eliminar esta nota?' }, class: "btn btn-outline-danger btn-sm" %>
+                    </div>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              <p class="text-muted">No hay notas para este libro.</p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-muted text-center">No tienes notas en ningún libro.</p>
+<% end %>
+
+<script>
+  function editarNota(id) {
+    document.getElementById('contenido-' + id).style.display = 'none';
+    document.getElementById('form-editar-' + id).classList.remove('d-none');
+  }
+  function cancelarEdicion(id) {
+    document.getElementById('form-editar-' + id).classList.add('d-none');
+    document.getElementById('contenido-' + id).style.display = '';
+  }
+</script>

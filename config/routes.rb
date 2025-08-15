@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  devise_for :users
   get "libros/index"
   get "libros/new"
   get "libros/create"
@@ -21,6 +22,12 @@ Rails.application.routes.draw do
       get :leer
       patch :guardar_pagina
       post :agregar_nota
+      post :agregar_a_lista
+    end
+    collection do
+      get :notas
+      get :libreria
     end
   end
+  resources :notum
 end

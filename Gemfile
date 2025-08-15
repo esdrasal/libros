@@ -22,6 +22,9 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
+# Authentication
+gem 'devise'
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
@@ -71,3 +74,6 @@ end
 # Use Cloudinary for image uploads and transformations [https://cloudinary.com/documentation/rails_integration]
 gem 'cloudinary', '~> 2.3.0'
 gem 'activestorage-cloudinary-service', '~> 0.2.3'
+
+# PDF processing
+gem 'pdf-reader', '~> 2.0'
