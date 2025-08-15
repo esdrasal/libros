@@ -1,0 +1,31 @@
+<h1>Agregar Nuevo Libro</h1>
+
+<% if @libro.errors.any? %>
+  <div class="alert alert-danger">
+    <ul>
+      <% @libro.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with(model: @libro, local: true) do |f| %>
+  <%= f.label :titulo %>
+  <%= f.text_field :titulo %>
+
+  <%= f.label :autor %>
+  <%= f.text_field :autor %>
+
+  <%= f.label :paginas %>
+  <%= f.number_field :paginas %>
+
+  <%= f.label :estado %>
+  <%= f.select :estado, Libro.estados.keys.map { |e| [e.humanize, e] } %>
+
+  <%= f.label :pdf, "Subir PDF" %>
+  <%= f.file_field :pdf %>
+
+  <%= f.submit "Agregar Libro" %>
+<% end %>
+<%= link_to "Volver a Mis Libros", libros_path, class: "btn btn-secondary" %>

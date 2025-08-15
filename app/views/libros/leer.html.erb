@@ -1,0 +1,253 @@
+<h1><%= @libro.titulo %> - Lector</h1>
+
+<div id="pdf-container" style="width:90%; height:80vh; border:1px solid #ccc; margin:0 auto; position:relative;">
+  <!-- Botón invisible izquierdo -->
+  <div id="nav-left" style="position:absolute; left:0; top:0; width:15%; height:100%; background:transparent; cursor:pointer; z-index:10; transition:background 0.2s;"></div>
+  <!-- Botón invisible derecho -->
+  <div id="nav-right" style="position:absolute; right:0; top:0; width:15%; height:100%; background:transparent; cursor:pointer; z-index:10; transition:background 0.2s;"></div>
+</div>
+
+<div style="text-align: center; margin: 20px 0;">
+  <button id="prev">Anterior</button>
+  <button id="next">Siguiente</button>
+  <button id="zoom-out">Zoom -</button>
+  <button id="zoom-in">Zoom +</button>
+  <button id="zoom-reset">Reset</button>
+  <span style="margin-left: 20px;">Página: <span id="page-num"></span> / <span id="page-count"></span></span>
+  <button id="btn-nota">Notas</button>
+  <!-- Botón Volver a Mis Libros -->
+  <%= link_to "Volver a Mis Libros", libros_path, class: "btn btn-secondary", style: "margin-left: 20px;" %>
+</div>
+
+<!-- Modal flotante de notas -->
+<div id="nota-modal" style="display:none; position:absolute; top:100px; left:100px; width:300px; background:#f9f9f9; border:1px solid #ccc; z-index:1000;">
+  <div id="nota-header" style="background:#ddd; padding:5px 10px; cursor:move; border-bottom:1px solid #ccc;">
+    <h4 style="margin:0;">Agregar Nota</h4>
+  </div>
+  <div style="padding:10px;">
+    <textarea id="nota-texto" style="width:100%; height:100px; cursor:text;"></textarea>
+    <div style="margin-top:10px;">
+      <button id="guardar-nota">Guardar</button>
+      <button id="cerrar-nota">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    // Wait for PDF.js to be available
+    if (typeof pdfjsLib === 'undefined') {
+      console.error('PDF.js no está disponible');
+      document.getElementById('pdf-container').innerHTML = '<p>Error: No se pudo cargar el visor de PDF.</p>';
+      return;
+    }
+    
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    <% if @libro.pdf.attached? %>
+      const url = "<%= @libro.pdf_url_for_viewer %>";
+      console.log('PDF URL:', url);
+    <% else %>
+      console.error('No hay PDF adjunto para este libro');
+      document.getElementById('pdf-container').innerHTML = '<p>No hay PDF disponible para este libro.</p>';
+      return;
+    <% end %>
+
+    let pdfDoc = null,
+        pageNum = <%= @libro.pagina_actual || 1 %>,
+        pageRendering = false,
+        pageNumPending = null,
+        currentScale = 1;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('pdf-container');
+    container.appendChild(canvas);
+    
+    // Make canvas responsive to container
+    canvas.style.maxWidth = '100%';
+    canvas.style.maxHeight = '100%';
+    canvas.style.display = 'block';
+    canvas.style.margin = '0 auto';
+
+    pdfjsLib.getDocument(url).promise.then(function(pdf) {
+      console.log('PDF cargado correctamente:', pdf);
+      pdfDoc = pdf;
+      document.getElementById('page-count').textContent = pdfDoc.numPages;
+      renderPage(pageNum);
+    }).catch(function(error) {
+      console.error('Error cargando PDF:', error);
+      document.getElementById('pdf-container').innerHTML = '<p>Error al cargar el PDF: ' + error.message + '</p>';
+    });
+
+    function renderPage(num) {
+      pageRendering = true;
+      pdfDoc.getPage(num).then(function(page) {
+        // Calculate scale to fit the container
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        const viewport = page.getViewport({scale: 1});
+        const scaleX = containerWidth / viewport.width;
+        const scaleY = containerHeight / viewport.height;
+        const baseScale = Math.min(scaleX, scaleY, 2); // Max scale of 2
+        const scale = baseScale * currentScale;
+        
+        const scaledViewport = page.getViewport({scale: scale});
+        canvas.height = scaledViewport.height;
+        canvas.width = scaledViewport.width;
+
+        const renderContext = { canvasContext: ctx, viewport: scaledViewport };
+        const renderTask = page.render(renderContext);
+
+        renderTask.promise.then(function() {
+          pageRendering = false;
+          document.getElementById('page-num').textContent = num;
+
+          // Guardar página actual en Rails
+          fetch("<%= guardar_pagina_libro_path(@libro) %>", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", "X-CSRF-Token": "<%= form_authenticity_token %>" },
+            body: JSON.stringify({ pagina_actual: num })
+          });
+        });
+
+        if (pageNumPending !== null) {
+          renderPage(pageNumPending);
+          pageNumPending = null;
+        }
+      });
+    }
+
+    function queueRenderPage(num) {
+      if (pageRendering) {
+        pageNumPending = num;
+      } else {
+        renderPage(num);
+      }
+    }
+
+    document.getElementById('prev').addEventListener('click', () => {
+      if (pageNum <= 1) return;
+      pageNum--;
+      queueRenderPage(pageNum);
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      if (pageNum >= pdfDoc.numPages) return;
+      pageNum++;
+      queueRenderPage(pageNum);
+    });
+
+    // Controles de zoom
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      currentScale = Math.min(currentScale * 1.2, 3); // Max zoom 3x
+      queueRenderPage(pageNum);
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      currentScale = Math.max(currentScale / 1.2, 0.5); // Min zoom 0.5x
+      queueRenderPage(pageNum);
+    });
+
+    document.getElementById('zoom-reset').addEventListener('click', () => {
+      currentScale = 1;
+      queueRenderPage(pageNum);
+    });
+
+    // Navegación invisible sobre el PDF
+    const navLeft = document.getElementById('nav-left');
+    const navRight = document.getElementById('nav-right');
+
+    navLeft.addEventListener('mouseenter', () => {
+      navLeft.style.background = 'rgba(0,0,0,0.05)';
+    });
+
+    navLeft.addEventListener('mouseleave', () => {
+      navLeft.style.background = 'transparent';
+    });
+
+    navLeft.addEventListener('click', () => {
+      if (pageNum <= 1) return;
+      pageNum--;
+      queueRenderPage(pageNum);
+    });
+
+    navRight.addEventListener('mouseenter', () => {
+      navRight.style.background = 'rgba(0,0,0,0.05)';
+    });
+
+    navRight.addEventListener('mouseleave', () => {
+      navRight.style.background = 'transparent';
+    });
+
+    navRight.addEventListener('click', () => {
+      if (pageNum >= pdfDoc.numPages) return;
+      pageNum++;
+      queueRenderPage(pageNum);
+    });
+
+    // Mostrar modal al hacer clic en botón
+    const btnNota = document.getElementById('btn-nota');
+    const notaModal = document.getElementById('nota-modal');
+    const cerrarNota = document.getElementById('cerrar-nota');
+    const guardarNota = document.getElementById('guardar-nota');
+
+    btnNota.addEventListener('click', () => { notaModal.style.display = 'block'; });
+    cerrarNota.addEventListener('click', () => { notaModal.style.display = 'none'; });
+
+    // Hacer modal draggable solo desde el header
+    let offsetX, offsetY, isDown = false;
+    const notaHeader = document.getElementById('nota-header');
+
+    notaHeader.addEventListener('mousedown', (e) => {
+      isDown = true;
+      offsetX = e.clientX - notaModal.offsetLeft;
+      offsetY = e.clientY - notaModal.offsetTop;
+      e.preventDefault(); // Evitar selección de texto
+    });
+
+    document.addEventListener('mouseup', () => { isDown = false; });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      notaModal.style.left = (e.clientX - offsetX) + 'px';
+      notaModal.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    // Guardar nota via fetch
+    guardarNota.addEventListener('click', () => {
+      const contenido = document.getElementById('nota-texto').value;
+      if (!contenido.trim()) return alert('La nota no puede estar vacía');
+
+      fetch("<%= agregar_nota_libro_path(@libro) %>", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({
+          contenido: contenido,
+          pagina: pageNum
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success){
+          alert('Nota guardada!');
+          document.getElementById('nota-texto').value = '';
+          notaModal.style.display = 'none';
+        } else {
+          alert('Error: ' + data.errors.join(', '));
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+      });
+    });
+  });
+
+</script>
+

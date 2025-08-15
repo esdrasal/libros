@@ -1,0 +1,33 @@
+<h1>Mis Libros</h1>
+
+<% unless @libros.any? %>
+  <p>No tienes libros registrados.</p>
+  <%= link_to "Agregar Libro", new_libro_path, class: "btn btn-primary" %>
+<% else %> 
+<table>
+  <tr>
+    <th>Título</th>
+    <th>Autor</th>
+    <th>Estado</th>
+    <th>Progreso</th>
+  </tr>
+  <% @libros.each do |libro| %>
+    <tr>
+      <td><%= link_to libro.titulo, leer_libro_path(libro) %></td>
+      <td><%= libro.autor %></td>
+      <td><%= libro.estado.humanize %></td>
+      <td>
+        <% if libro.leyendo? %>
+          <%= libro.progreso %>%
+        <% else %>
+          -
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+</table>
+
+<br>
+<%= link_to "Agregar Libro", new_libro_path, class: "btn btn-primary" %>
+<% end %>
+
