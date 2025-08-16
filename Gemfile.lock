@@ -187,7 +187,6 @@ GEM
     minitest (5.25.5)
     msgpack (1.8.0)
     multipart-post (2.4.1)
-    mysql2 (0.5.6)
     net-http (0.6.0)
       uri
     net-imap (0.5.9)
@@ -427,7 +426,6 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
-  mysql2 (~> 0.5)
   pdf-reader (~> 2.0)
   pg (~> 1.5)
   propshaft
