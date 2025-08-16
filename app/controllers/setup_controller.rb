@@ -5,8 +5,8 @@ class SetupController < ApplicationController
   def migrate
     if Rails.env.production?
       begin
-        # Run migrations
-        ActiveRecord::MigrationContext.new(ActiveRecord::Migrator.migrations_paths).migrate
+        # Run migrations using rake task
+        system('bundle exec rails db:migrate')
         
         render json: { 
           status: 'success', 
