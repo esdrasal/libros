@@ -84,6 +84,14 @@ class LibrosController < ApplicationController
       .includes(:nota)
   end
 
+  def online
+    # Obtén todos los archivos PDF de Cloudinary
+    cloudinary_files = Cloudinary::Api.resources(resource_type: 'raw', type: 'upload', max_results: 100)["resources"]
+    # Filtra los que NO están en la biblioteca (por ejemplo, por public_id o url)
+    usados = Libro.pluck(:pdf_url)
+    @materiales_online = cloudinary_files.reject { |f| usados.include?(f["secure_url"]) }
+  end
+
   private
 
   def set_libro

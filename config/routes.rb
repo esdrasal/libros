@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     collection do
       get :notas
       get :libreria
+      get :online
     end
   end
   resources :notum
