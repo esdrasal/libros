@@ -16,4 +16,12 @@ test:
   database: <%= ENV.fetch("DB_NAME", "libros_test") %>
 
 production:
-  url: <%= ENV["DATABASE_URL"] %>
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  url: <%= ENV["DATABASE_URL"] if ENV["DATABASE_URL"] %>
+  host: <%= ENV["PGHOST"] if ENV["PGHOST"] %>
+  port: <%= ENV["PGPORT"] if ENV["PGPORT"] %>
+  database: <%= ENV["PGDATABASE"] if ENV["PGDATABASE"] %>
+  username: <%= ENV["PGUSER"] if ENV["PGUSER"] %>
+  password: <%= ENV["PGPASSWORD"] if ENV["PGPASSWORD"] %>
