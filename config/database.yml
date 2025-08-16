@@ -52,13 +52,9 @@ test:
 #
 production:
   primary: &primary_production
-    <<: *default
-    host: <%= ENV.fetch("PRODUCTION_DB_HOST", ENV.fetch("DB_HOST", "localhost")) %>
-    port: <%= ENV.fetch("DB_PORT", "3306") %>
-    database: <%= ENV.fetch("PRODUCTION_DB_NAME", ENV.fetch("DB_NAME", "libros_production")) %>
-    username: <%= ENV.fetch("PRODUCTION_DB_USERNAME", ENV.fetch("DB_USERNAME", "libros")) %>
-    password: <%= ENV.fetch("PRODUCTION_DB_PASSWORD", ENV.fetch("DB_PASSWORD", "")) %>
-    socket: <%= ENV.fetch("DB_SOCKET", "") %>
+    adapter: <%= ENV.fetch("DATABASE_ADAPTER", "postgresql") %>
+    url: <%= ENV.fetch("DATABASE_URL") %>
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   cache:
     <<: *primary_production
     database: libros_production_cache
