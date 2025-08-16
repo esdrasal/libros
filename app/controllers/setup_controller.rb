@@ -6,7 +6,7 @@ class SetupController < ApplicationController
     if Rails.env.production?
       begin
         # Run migrations
-        ActiveRecord::Migrator.migrate(ActiveRecord::Migrator.migrations_paths)
+        ActiveRecord::MigrationContext.new(ActiveRecord::Migrator.migrations_paths).migrate
         
         render json: { 
           status: 'success', 
