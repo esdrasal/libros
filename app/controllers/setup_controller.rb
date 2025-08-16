@@ -52,8 +52,8 @@ class SetupController < ApplicationController
         
         # Add your books data here
         sample_books = [
-          { titulo: 'Don Quijote', autor: 'Cervantes', paginas_total: 1000 },
-          { titulo: 'Cien años de soledad', autor: 'García Márquez', paginas_total: 450 }
+          { titulo: 'Don Quijote', autor: 'Cervantes', paginas: 1000 },
+          { titulo: 'Cien años de soledad', autor: 'García Márquez', paginas: 450 }
         ]
         
         sample_books.each do |book_data|
