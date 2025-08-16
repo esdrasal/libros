@@ -24,6 +24,20 @@ class SetupController < ApplicationController
     end
   end
   
+  def check_env
+    if Rails.env.production?
+      render json: {
+        database_url_present: ENV['DATABASE_URL'].present?,
+        database_url_preview: ENV['DATABASE_URL'] ? ENV['DATABASE_URL'][0..20] + "..." : nil,
+        secret_key_present: ENV['SECRET_KEY_BASE'].present?,
+        rails_env: Rails.env,
+        all_env_keys: ENV.keys.grep(/DATABASE|POSTGRES|PG/)
+      }
+    else
+      render json: { status: 'error', message: 'Only available in production' }
+    end
+  end
+  
   def migrate_data
     if Rails.env.production?
       begin

@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   devise_for :users
   
   # Temporary setup routes for Railway
+  get 'setup/check_env', to: 'setup#check_env'
   post 'setup/migrate', to: 'setup#migrate'
   post 'setup/migrate_data', to: 'setup#migrate_data'
   get "libros/index"
