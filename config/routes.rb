@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
   devise_for :users
+  
+  # Temporary setup routes for Railway
+  post 'setup/migrate', to: 'setup#migrate'
+  post 'setup/migrate_data', to: 'setup#migrate_data'
   get "libros/index"
   get "libros/new"
   get "libros/create"
