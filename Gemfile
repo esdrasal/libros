@@ -70,7 +70,7 @@ group :development, :test do
 end
 
 # Use Cloudinary for image uploads and transformations [https://cloudinary.com/documentation/rails_integration]
-gem "cloudinary", "~> 2.3.0"
+gem "cloudinary", "~> 2.4.0"
 gem "activestorage-cloudinary-service", "~> 0.2.3"
 
 # PDF processing
